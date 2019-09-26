@@ -96,7 +96,7 @@ dishRouter.route('/:dishId/comments')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser, authenticate.verifyAdmin,(req, res, next) => {
+.post(authenticate.verifyUser,(req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if (dish != null) {
@@ -220,6 +220,12 @@ dishRouter.route('/:dishId/comments/:commentId')
     .then((dish) => {
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
             if (!(dish.comments.id(req.params.commentId).author).equals(req.user._id))
+        {
+         var err = new Error('You are not authorized to perform this operation!');
+        err.status = 403;
+        next(err);
+         return;
+        }
             dish.comments.id(req.params.commentId).remove();
             dish.save()
             .then((dish) => {
